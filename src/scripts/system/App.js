@@ -27,6 +27,8 @@ class Application {
     }
 
     start() {
+        this.app.stage.removeChildren();
+        
         this.scene = new this.config["startScene"]();
         this.app.stage.addChild(this.scene.container);
     }

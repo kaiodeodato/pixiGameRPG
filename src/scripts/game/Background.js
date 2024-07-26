@@ -1,87 +1,141 @@
 import * as PIXI from "pixi.js";
 import { App } from "../system/App";
+import { BasicClass } from "./BasicClass";
 
-export class Background {
-    constructor(hero) {
-        this.hero = hero;
+export class Background extends BasicClass {
+    constructor() {
+        super();
+        this.map = "map1";
         this.container = new PIXI.Container();
-        this.createSprites();
-        this.createCollisionMap();
+        this.createSprites(this.map);
+        this.mapChangeListeners = [];
     }
 
-    createSprites() {
-        this.sprite = App.sprite("map1");
+
+
+    createSprites(map) {
+        this.sprite = App.sprite(map);
         this.container.addChild(this.sprite);
+        this.createCollisionMap(map);
     }
 
-    createCollisionMap() {
+    createCollisionMap(map) {
         this.collisionContainer = new PIXI.Container();
         this.container.addChild(this.collisionContainer);
-    
-        const collisionMap = App.config.collisionMap;
+        const collisionMap = App.config[map];
 
         for (let y = 0; y < collisionMap.length; y++) {
             for (let x = 0; x < collisionMap[y].length; x++) {
                 const value = collisionMap[y][x];
+
                 let tileSprite;
-    
-                if (value === 1) {
-                    tileSprite = this.SpriteFromSheetTexture(0, 0, "cave");
-                } 
-                else if (value === 2) {
-                    tileSprite = App.sprite("tile");
-                    tileSprite.alpha = 0; 
-                } 
-                else if (value === 4) {
-                    tileSprite = new PIXI.Sprite(App.res("stone1"));
-                    tileSprite.alpha = 1;
-                } 
-                else if (value === 5) {
-                    const frames = [
-                        App.res("water1"),
-                        App.res("water2"),
-                        App.res("water3"),
-                        App.res("water4"),
-                        App.res("water5"),
-                        App.res("water6"),
-                        App.res("water7"),
-                        App.res("water8"),
-                    ];
-                    tileSprite = new PIXI.AnimatedSprite(frames);
-                    tileSprite.animationSpeed = 0.1; 
-                    tileSprite.play(); 
+
+                switch(value){
+                    case 1:
+                        tileSprite = this.spriteFromSheetTexture(0, 0, "cave");
+                        break;
+                    case 2:
+                        tileSprite = App.sprite("tile");
+                        tileSprite.alpha = 0; 
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        tileSprite = this.spriteFromSheetTexture(0, 0, "Inner");
+                        break;
+                    case 5:
+                        const frames = [
+                            App.res("water1"),
+                            App.res("water2"),
+                            App.res("water3"),
+                            App.res("water4"),
+                            App.res("water5"),
+                            App.res("water6"),
+                            App.res("water7"),
+                            App.res("water8"),
+                        ];
+                        tileSprite = new PIXI.AnimatedSprite(frames);
+                        tileSprite.animationSpeed = 0.1; 
+                        tileSprite.play(); 
+                        break;
+                    case 6:
+                        tileSprite = this.AnimateAndReturnFromSheetTexture(0, 8, "waterAnim");
+                        break;
+                    case 7:
+                        tileSprite = this.spriteFromStripeTexture(0, "waterAnim");
+                        break;
+                    case 8:
+                        tileSprite = this.spriteFromSheetTexture(0, 1, "Inner");
+                        break;
+                    case 9:
+                        tileSprite = this.spriteFromSheetTexture(10, 0, "cave");
+                        break;
+                    case 10:
+                        tileSprite = this.spriteFromSheetTextureWithFrame(33, -160, "Overworld", 160);
+                        tileSprite.anchor.set(0.5);
+                        break;
+                    case 11:
+                        tileSprite = this.spriteFromSheetTexture(2, 17, "Overworld");
+                        break;
+                    case 12:
+                        tileSprite = this.spriteFromSheetTexture(3, 17, "Overworld");
+                        break;
+                    case 13:
+                        tileSprite = this.spriteFromSheetTexture(3, 18, "Overworld");
+                        break;
+                    case 14:
+                        tileSprite = this.spriteFromSheetTexture(2, 18, "Overworld");
+                        break;
+                    case 15:
+                        tileSprite = this.spriteFromSheetTexture(4, 17, "Overworld");
+                        break;
+                    case 16:
+                        tileSprite = this.spriteFromSheetTexture(4, 18, "Overworld");
+                        break;
+                    case 17:
+                        tileSprite = this.spriteFromSheetTexture(1, 19, "Overworld");
+                        break;
+                    case 18:
+                        tileSprite = this.spriteFromSheetTexture(0, 19, "Overworld");
+                        break;
+                    case 19:
+                        tileSprite = this.spriteFromSheetTexture(0, 17, "Overworld");
+                        break;
+                    case 20:
+                        tileSprite = this.spriteFromSheetTexture(0, 18, "Overworld");
+                        break;
+                    case 22:
+                        tileSprite = this.spriteFromSheetTexture(10, 0, "cave");
+                        break;
+                    case 23:
+                        tileSprite = this.spriteFromSheetTexture(10, 0, "cave");
+                        break;
+                    case 25:
+                        tileSprite = this.spriteFromSheetTexture(6, 7, "Inner");
+                        break;
+                    case 30:
+                        tileSprite = this.spriteFromSheetTexture(9, 1, "cave");
+                        break;
+                    case 31:
+                        tileSprite = this.spriteFromSheetTexture(8, 1, "cave");
+                        break;
+                        
+                    default:
+                        tileSprite = new PIXI.Sprite(App.res("tile"));
+                        tileSprite.alpha = 0; 
+                        break;
                 }
-                else if (value === 6) {
-                    tileSprite = this.AnimateFromSheetTexture(0, 8, "waterAnim");
+            
+                if (tileSprite) {
+                    tileSprite.x = x * App.config.TILE_SIZE_SMALL;
+                    tileSprite.y = y * App.config.TILE_SIZE_SMALL;
+                    this.collisionContainer.addChild(tileSprite);
                 }
-                else if  (value === 7) {
-                    tileSprite = this.SpriteFromStripeTexture(0, "waterAnim");
-                }
-                else if (value === 8) {
-                    tileSprite = this.SpriteFromStripeTexture(0, "pit");
-                }
-                else if (value === 9) {
-                    tileSprite = this.SpriteFromStripeTexture(1, "pit");
-                }
-                else if (value === 10) {
-                    tileSprite = this.SpriteFromStripeTexture(2, "pit");
-                }
-                else if (value === 11) {
-                    tileSprite = this.SpriteFromStripeTexture(3, "pit");
-                }
-                else {
-                    tileSprite = new PIXI.Sprite(App.res("tile"));
-                    tileSprite.alpha = 0; 
-                }
-                tileSprite.x = x * App.config.TILE_SIZE_SMALL;
-                tileSprite.y = y * App.config.TILE_SIZE_SMALL;
-    
-                this.collisionContainer.addChild(tileSprite);
             }
         }
     }
     
-    AnimateFromSheetTexture(inicialFrame, finalFrame, texture) {
+    AnimateAndReturnFromSheetTexture(inicialFrame, finalFrame, texture) {
         const frameWidth = App.config.frameWidth;
         const frameHeight = App.config.frameHeight;
         const waterAnimTexture = App.res(texture);
@@ -100,78 +154,28 @@ export class Background {
         
         return tileSprite;
     }
-    
-    SpriteFromStripeTexture(frame, texture) {
-        const frameWidth = App.config.frameWidth;
-        const frameHeight = App.config.frameHeight;
-        const spriteSheetTexture  = App.res(texture);
 
-        const frameTexture = new PIXI.Texture(
-            spriteSheetTexture ,
-            new PIXI.Rectangle(frame * frameWidth, 0, frameWidth, frameHeight)
-        );
-        const sprite = new PIXI.Sprite(frameTexture);
-        return sprite; 
+    onMapChange(callback) {
+        this.mapChangeListeners.push(callback);
     }
 
-    SpriteFromSheetTexture(x, y, texture) {
-        const frameWidth = App.config.frameWidth;
-        const frameHeight = App.config.frameHeight;
-        const spriteSheetTexture  = App.res(texture);
+    mapChange(newMap) {
+        if (newMap !== this.map) {
+            this.container.removeChild(this.sprite);
+            this.collisionContainer.removeChildren();
 
-        const frameTexture = new PIXI.Texture(
-            spriteSheetTexture ,
-            new PIXI.Rectangle(x * frameWidth, y * frameHeight, frameWidth, frameHeight)
-        );
-        const sprite = new PIXI.Sprite(frameTexture);
-        return sprite; 
+            this.map = newMap;
+            this.createSprites(newMap);
+            this.notifyMapChange();
+        }
     }
-
-    isCollision(x, y) {
-        let arrayCollisions = [1, 2, 8, 9, 10, 11];
-        const mapX = Math.floor(x / App.config.TILE_SIZE_SMALL);
-        const mapY = Math.floor(y / App.config.TILE_SIZE_SMALL);
-        const tileValue = App.config.collisionMap[mapY] && App.config.collisionMap[mapY][mapX];
-
-        return arrayCollisions.includes(tileValue);
-    }
-
-    update(dt) {
-        let hero = this.hero;
-        if (hero) {
-            let proposedX = this.container.x - hero.vx * dt;
-            let proposedY = this.container.y - hero.vy * dt;
-
-            console.log(this.container.x, this.container.y)
-            if(this.container.x < 328 && this.container.x > 324 && this.container.y < 426 && this.container.y > 422){
-                console.log("tesouro")
-            }
-
-            const heroWidth = App.config.frameWidth;
-            const heroHeight = App.config.frameHeight;
-
-            if (!this.isCollision(
-                    -proposedX + App.config.hero.position.x + heroWidth / 2,
-                    -this.container.y + App.config.hero.position.y
-                ) && 
-                !this.isCollision(
-                    -proposedX + App.config.hero.position.x - heroWidth / 2,
-                    -this.container.y + App.config.hero.position.y
-                )) {
-                this.container.x = proposedX;
-            }
-    
-            if (!this.isCollision(
-                    -this.container.x + App.config.hero.position.x, 
-                    -proposedY + App.config.hero.position.y + heroHeight / 2
-                ) && 
-                !this.isCollision(
-                    -this.container.x + App.config.hero.position.x, 
-                    -proposedY + App.config.hero.position.y - heroHeight / 2
-                )) {
-                this.container.y = proposedY;
-            }
+  
+    notifyMapChange() {
+        for (const callback of this.mapChangeListeners) {
+            callback();
         }
     }
     
+    update(dt){
+    }
 }
